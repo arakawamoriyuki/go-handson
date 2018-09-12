@@ -1466,6 +1466,8 @@ for {
 
 ## API作ってみよう
 
+`httprouter` を使ってAPIサーバーを作って見ましょう。
+
 ```
 ├── bin
 ├── pkg
@@ -1487,10 +1489,14 @@ for {
         └── main.go
 ```
 
+`httprouter` をgo getします。
+
 ```
 $ cd $GOPATH/src
 $ go get github.com/julienschmidt/httprouter
 ```
+
+`main.go` を作成します。
 
 ```main.go
 package main
@@ -1560,10 +1566,14 @@ func main() {
 }
 ```
 
+APIサーバーを実行します。
+
 ```
 $ cd $GOPATH/src/main
 $ go run main.go
 ```
+
+コードを確認しながら試して見ましょう。
 
 ```
 $ curl http://localhost:8080/Hello/golang
@@ -1573,11 +1583,25 @@ $ curl -XPOST -d "{\"id\": 1, \"name\": \"arakawa\"}" http://localhost:8080/Exam
 {ID:1 Name:arakawa}
 ```
 
-
-`/FizzBuzz/:num` にハンドル
+`/FizzBuzz/:num` で FizzBuzz APIを作って見ましょう。
 
 ```
-http://localhost:8080/FizzBuzz/:num
+$ curl http://localhost:8080/FizzBuzz/1
+1
+$ curl http://localhost:8080/FizzBuzz/2
+2
+$ curl http://localhost:8080/FizzBuzz/3
+Fizz!
+$ curl http://localhost:8080/FizzBuzz/4
+4
+$ curl http://localhost:8080/FizzBuzz/5
+5
+$ curl http://localhost:8080/FizzBuzz/6
+Buzz!
+$ curl http://localhost:8080/FizzBuzz/7
+7
+$ curl http://localhost:8080/FizzBuzz/15
+FizzBuzz!
 ```
 
 

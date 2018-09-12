@@ -5,6 +5,11 @@
 - [はじめてのGo](http://gihyo.jp/dev/feature/01/go_4beginners)
 - [Go Web プログラミング](https://astaxie.gitbooks.io/build-web-application-with-golang/content/ja/01.0.html)
 
+```
+$ go version
+go version go1.11 darwin/amd64
+```
+
 -----
 
 
@@ -293,7 +298,7 @@ $ go get github.com/arakawamoriyuki/gosample # 取得
 $ go run main/main.go # 実行してみる
 ```
 
-### パッケージマネージャー
+### 依存パッケージ管理
 
 [依存パッケージ管理（Go）](https://gist.github.com/nakaji-s/7969970)
 
@@ -301,14 +306,58 @@ $ go run main/main.go # 実行してみる
 
 > パブリックなパッケージは常に後方互換性を持たせるべきで、異なる機能性を持たせたいときは、パッケージ自体の名前を変えて、import pathも変更するべき。
 
-goでは元からversion指定の概念がないのでパッケージマネージャーが必要ない(必要ない状態にしたい)って思想なのかも。
+とはいえ依存パッケージ管理には需要があり、以下のようなツールがある。
 
-詳しくは調べていないけど、一応 `rubyのgem` や `nodeのnpm` のようなパッケージマネージャはある。
-
+- vgo
+- dep
 - Glide
 - gom
-- dep
 
+[Google Trend](https://trends.google.co.jp/trends/explore?geo=JP&q=golang%20vgo,golang%20dep,golang%20glide,golang%20gom)
+
+#### Modules (vgo)
+
+[Go & Versioning(vgo)を読んで大きな変更が入ったなと思った](https://qiita.com/lufia/items/67701e2f927c77a75d6e)
+
+> Go 1.11で試験的な導入、Go 1.12で正式サポート
+
+[8月28日にリリースされたGo v1.11](https://github.com/golang/go/releases)から試験的に利用可能な公式で作っている依存パッケージ管理ツールです。
+
+`v1.12` になった際には `dep` から `Modules (vgo)` に移行すると思われる。
+
+- $GOPATHが不要になる
+- `dep` では必要なvendorディレクトリが必要なくなる
+- パッケージ側はセマンティックバージョニングでタグ付けする
+- go.modファイルに依存関係が書かれる
+
+```
+Modulesを利用する
+$ export GO111MODULE=on
+
+buildするとgo.modが作られて依存関係が書かれる
+$ cd $GOPATH
+$ go build src/main/main.go
+```
+
+```go.mod
+module github.com/arakawamoriyuki/go-handson
+
+require github.com/arakawamoriyuki/gosample v1.0.0 // indirect
+```
+
+[go1.11のModulesを使って依存パッケージを管理する](https://qiita.com/fuku2014/items/ae24c2504097a4dcad28)
+
+[Go 1.11 の modules・vgo を試す - 実際に使っていく上で考えないといけないこと #golang](https://www.wantedly.com/companies/wantedly/post_articles/132270)
+
+[vgo (Versioned Go) に関する覚え書き](http://text.baldanders.info/golang/go-and-versioning/)
+
+#### dep
+
+[github golang/dep](https://github.com/golang/dep)
+
+[Go 1.11 の modules・vgo を試す - 実際に使っていく上で考えないといけないこと #golang](https://www.wantedly.com/companies/wantedly/post_articles/132270)
+
+> dep は Go が公式に "実験的に" 作っている依存管理ツールです。glide など以前から存在していたツールからの migration の仕組みも持っており、dep への移行を促すプロジェクトも多いです。
 
 -----
 
@@ -317,7 +366,7 @@ goでは元からversion指定の概念がないのでパッケージマネー�
 
 ### パッケージ宣言
 
-```
+```sample.go
 package main
 ```
 
@@ -334,7 +383,7 @@ package main
 
 GOPATH環境変数からパスを解決する
 
-```
+```sample.go
 import (
     "fmt"
     "github.com/arakawamoriyuki/gosample"
@@ -347,7 +396,7 @@ import (
 - `.` は中の関数が展開される ( `strings.ToUpper()` が `ToUpper()` )
 - `_` は使用していないパッケージだと明示する (使用してなくてもコンパイルエラーにならない)
 
-```
+```sample.go
 import (
     f "fmt"
     _ "github.com/wdpress/gosample"
@@ -380,13 +429,13 @@ import (
 
 文字列はダブルクォート
 
-```
+```sample.go
 var Message string = "hello world"
 ```
 
 ヒアドキュメントはバッククォート
 
-```
+```sample.go
 var Message string = `first line
 second line
 third line`
@@ -394,13 +443,13 @@ third line`
 
 型推論 (明らかにわかる型はコンパイラが推論して型宣言を省略できる)
 
-```
+```sample.go
 message := "hello world"
 ```
 
 ### 変数
 
-```
+```sample.go
 //var 変数名 型 = 値
 var message string = "hello world"
 
@@ -419,7 +468,7 @@ var (
 
 定数はconst、再代入不可になる
 
-```
+```sample.go
 const Hello string = "hello"
 Hello = "bye" // cannot assign to Hello
 ```
@@ -428,7 +477,7 @@ Hello = "bye" // cannot assign to Hello
 
 代入しない場合ゼロ値になる
 
-```
+```sample.go
 var i int // 整数型のゼロ値 0 になる
 ```
 
@@ -448,7 +497,7 @@ var i int // 整数型のゼロ値 0 になる
 
 三項演算子はない
 
-```
+```sample.go
 a, b := 10, 100
 if a > b {
     fmt.Println("a is larger than b")
@@ -463,7 +512,7 @@ if a > b {
 
 基本的なfor
 
-```
+```sample.go
 for i := 0; i < 10; i++ {
     fmt.Println(i)
 }
@@ -471,7 +520,7 @@ for i := 0; i < 10; i++ {
 
 whileっぽいfor
 
-```
+```sample.go
 n := 0
 for n < 10 {
     fmt.Printf("n = %d\n", n)
@@ -481,7 +530,7 @@ for n < 10 {
 
 無限ループ
 
-```
+```sample.go
 for {
     doSomething()
 }
@@ -493,7 +542,7 @@ for {
 
 カンマで区切った複数の値も指定可能。
 
-```
+```sample.go
 n := 10
 switch n {
 case 15:
@@ -509,7 +558,7 @@ default:
 
 caseが1つ実行されると次のcaseにうつらない。 `fallthrough` キーワードで次にうつる事もできる。
 
-```
+```sample.go
 n := 3
 switch n {
 case 3:
@@ -528,7 +577,7 @@ case 1:
 
 引数には型を指定、複数同じ型なら一つにまとめられる。
 
-```
+```sample.go
 func sum(i, j int) {
     fmt.Println(i + j)
 }
@@ -536,7 +585,7 @@ func sum(i, j int) {
 
 戻り値は関数定義のあとに型指定。
 
-```
+```sample.go
 func sum(i, j int) int {
     return i + j
 }
@@ -544,7 +593,7 @@ func sum(i, j int) int {
 
 複数値を返せるので複数の型指定。
 
-```
+```sample.go
 func swap(i, j int) (int, int) {
     return j, i
 }
@@ -552,7 +601,7 @@ func swap(i, j int) (int, int) {
 
 名前付き戻り値で `return` の後の値を省略できる。(代入された値を返す。代入されていなければ結果的にゼロ値を返す)
 
-```
+```sample.go
 func div(i, j int) (result int, err error) {
     if j == 0 {
         err = errors.New("divied by zero")
@@ -565,7 +614,7 @@ func div(i, j int) (result int, err error) {
 
 無名関数
 
-```
+```sample.go
 func(i, j int) {
     fmt.Println(i + j)
 }(2, 4)
@@ -573,7 +622,7 @@ func(i, j int) {
 
 変数に入れる事もできます。
 
-```
+```sample.go
 var sum func(i, j int) = func(i, j int) {
     fmt.Println(i + j)
 }
@@ -581,7 +630,7 @@ var sum func(i, j int) = func(i, j int) {
 
 可変長引数も利用できます。
 
-```
+```sample.go
 func sum(nums ...int) (result int) {
     // numsは[]int型
     for _, n := range nums {
@@ -605,7 +654,7 @@ goはエラーを戻り値で表現するため、`try/catch` や `throw` があ
 
 自作のエラーは，errorsパッケージを使って表現します。
 
-```
+```sample.go
 package main
 
 import (
@@ -638,20 +687,20 @@ func main() {
 
 配列は固定長で、長さを指定する。
 
-```
+```sample.go
 var arr1 [4]string
 ```
 
 `[...]` で暗黙的に長さの指定。
 暗黙の型変換と組み合わせた例。
 
-```
+```sample.go
 arr := [...]string{"a", "b", "c", "d"}
 ```
 
 もちろん引数にも型と長さの指定をする必要があります。
 
-```
+```sample.go
 func fn(arr [4]string) {
     fmt.Println(arr)
 }
@@ -667,14 +716,14 @@ func main() {
 
 スライスという可変長配列も定義できる。
 
-```
+```sample.go
 var s []string
 s := []string{"a", "b", "c", "d"}
 ```
 
 pythonのように値を部分的に切り出す事ができます。
 
-```
+```sample.go
 s := []int{0, 1, 2, 3, 4, 5}
 fmt.Println(s[2:4])      // [2 3]
 fmt.Println(s[0:len(s)]) // [0 1 2 3 4 5]
@@ -688,7 +737,7 @@ fmt.Println(s[:])        // [0 1 2 3 4 5]
 
 `append` はスライスの末尾に値を追加し、その結果を返す組込み関数です。
 
-```
+```sample.go
 s1 := []string{"a", "b"}
 s2 := []string{"c", "d"}
 s1 = append(s1, s2...) // s1にs2を追加
@@ -699,7 +748,7 @@ fmt.Println(s1)        // [a b c d]
 
 添字によるアクセスの代わりに `range` を使用できます。
 
-```
+```sample.go
 var arr [4]string
 
 arr[0] = "a"
@@ -725,7 +774,7 @@ $ go run range.go
 
 `string` のキーに `int` の値を格納するマップ
 
-```
+```sample.go
 var month map[string]int = map[string]int{}
 
 month := map[string]int{
@@ -736,7 +785,7 @@ month := map[string]int{
 
 キーの存在確認
 
-```
+```sample.go
 _, ok := month["January"]
 if ok {
     // データがあった場合
@@ -745,7 +794,7 @@ if ok {
 
 マップからデータを消す
 
-```
+```sample.go
 delete(month, "January")
 ```
 
@@ -763,9 +812,9 @@ Goはポインタを扱うことができます。
 
 PHPでいう引数に&つけて明示的に参照渡すやつ。 `function increment(&$var) {...}`
 
-ミュータブル、イミュータブルがなく、int型も参照渡しできるし配列を値渡しもできる。
+int型も参照渡しできるし配列を値渡しもできる。
 
-```
+```sample.go
 func callByValue(i int) {
     i = 20 // 値を上書きする
 }
@@ -783,7 +832,7 @@ func main() {
 }
 ```
 
-明示的にポインタだと宣言できない言語(rubyもpythonもjavascriptも)でミュータブルな変数の参照渡しは辛い。(毎回追わないといけないし、疑わないといけない)
+明示的にポインタだと宣言できない言語(rubyもpythonもjavascriptも)が多い中、中で更新されてるか毎度疑わなくて良くなるので嬉しい。
 
 引数受ける側も関数利用側もポインタ渡す/受けるなら `*` もしくは `&` つけないとコンパイルエラーになるので、副作用理解した上でプログラミングできる。
 
@@ -797,7 +846,7 @@ func main() {
 
 `finaly` みたいなイメージで良いと思う。
 
-```
+```sample.go
 func main() {
     file, err := os.Open("./error.go")
     if err != nil {
@@ -819,7 +868,7 @@ func main() {
 
 パニックで発生したエラーは `recover` で拾えるので、deferで処理する事でエラー処理ができる。
 
-```
+```sample.go
 func main() {
     defer func() {
         err := recover()
@@ -836,7 +885,7 @@ func main() {
 
 パニックは自分で起こす事もできる。けど、基本的にエラーは関数の戻り値として呼び出し側に返しましょう。
 
-```
+```sample.go
 a := []int{1, 2, 3}
 for i := 0; i < 10; i++ {
     if i >= len(a) {
@@ -854,7 +903,7 @@ for i := 0; i < 10; i++ {
 
 以下の関数はint型の `id` と `priority` を受け取る。
 
-```
+```sample.go
 func ProcessTask(id, priority int) {
 }
 ```
@@ -863,7 +912,7 @@ func ProcessTask(id, priority int) {
 
 引数の順番間違えてもコンパイル通っちゃう間違えやすいインターフェースになってる。
 
-```
+```sample.go
 var id int = 3
 var priority int = 5
 ProcessTask(id, priority)
@@ -872,7 +921,7 @@ ProcessTask(priority, id) // 順番間違えてもコンパイル通る
 
 場合に応じて独自の型を定義すると安全になる。
 
-```
+```sample.go
 type ID int
 type Priority int
 
@@ -890,7 +939,7 @@ ProcessTask(priority, id) // コンパイルエラー
 
 構造体のプロパティはドットでアクセス可能
 
-```
+```sample.go
 type Task struct {
     ID int
     Detail string
@@ -909,14 +958,14 @@ fmt.Println(task.done) // true
 
 ## ポインタ型
 
-```
+```sample.go
 var task Task = Task{} // Task型
 var task *Task = &Task{} // Taskのポインタ型
 ```
 
 ポインタ型ではない型は値渡しされる。
 
-```
+```sample.go
 type Task struct {
     ID int
     Detail string
@@ -936,7 +985,7 @@ func main() {
 
 ポインタ型は参照渡しされる。
 
-```
+```sample.go
 func Finish(task *Task) {
     task.done = true
 }
@@ -950,7 +999,7 @@ func main() {
 
 逆にポインタ型でなければ値渡しされる。
 
-```
+```sample.go
 func Finish(task Task) {
     task.done = true
 }
@@ -966,7 +1015,7 @@ func main() {
 
 構造体は組み込み関数 `new` でゼロ値で初期化
 
-```
+```sample.go
 type Task struct {
     ID int
     Detail string
@@ -982,7 +1031,7 @@ Goには構造体のコンストラクタにあたる構文がありません。
 
 代わりにNewで始まる関数を定義し、その内部で構造体を生成するのが通例です。
 
-```
+```sample.go
 func NewTask(id int, detail string) *Task {
     task := &Task{
         ID: id,
@@ -1011,12 +1060,12 @@ func main() {
 
 変数名は `this` にあたいするものだとと読み替えてもいいかも。
 
-```
+```sample.go
 func (変数名 メソッドを定義したい型) メソッド名() 戻り値の型 {
 }
 ```
 
-```
+```sample.go
 type Task struct {
     ID int
     Detail string
@@ -1059,7 +1108,7 @@ Taskに実装したString()というメソッドが定義されている事を�
 
 実装すべき関数名が単純な場合は，その関数名にerを加えた名前を付ける慣習がある。
 
-```
+```sample.go
 // .String()メソッドを実装している事をコンパイラに知らせる
 type Stringer interface {
     String() string
@@ -1075,7 +1124,7 @@ Print(task)
 
 例えば、 `fmt.Print` の引数は `String()` を実装している事を `interface` で強制しているので先ほど作った `task` を渡せる。
 
-```
+```sample.go
 type Stringer interface {
     String() string
 }
@@ -1089,7 +1138,7 @@ fmt.Print(task)
 
 すべての引数を受け付けるAny型が作れる
 
-```
+```sample.go
 type Any interface {
 }
 
@@ -1100,7 +1149,7 @@ func Do(any Any) {
 
 書き方自体はこれと同じ
 
-```
+```sample.go
 func Do(any interface{}) {
   // do something
 }
@@ -1112,7 +1161,7 @@ Goでは，継承はサポートされていません。
 
 代わりにほかの型を「埋め込む」(Embed) という方式で構造体やインタフェースの振る舞いを拡張できます。
 
-```
+```sample.go
 // 苗字と名前を持ったUser構造体
 type User struct {
     FirstName string
@@ -1171,7 +1220,7 @@ func main() {
 
 構造体( `struct` )だけではなくインターフェース( `interface` )も「埋め込む」(Embed) 事ができます
 
-```
+```sample.go
 // 読み込みメソッドがある事をインターフェースで宣言
 type Reader interface {
     Read(p []byte) (n int, err error)
@@ -1193,7 +1242,7 @@ type ReadWriter interface {
 
 暗黙の型変換はできないけど明示的に型変換(キャスト)はできます。
 
-```
+```sample.go
 var s string = "abc"
 var b []byte = []byte(s) // string -> []byte
 fmt.Println(b)           // [97 98 99]
@@ -1201,7 +1250,7 @@ fmt.Println(b)           // [97 98 99]
 
 キャストに失敗した場合はパニックが発生します。
 
-```
+```sample.go
 // cannot convert "a" (type string) to type int
 a := int("a")
 ```
@@ -1212,7 +1261,7 @@ Type Assertionで型を調べる事ができます。
 
 第一戻り値が元の値、第二戻り値が調べた結果です。
 
-```
+```sample.go
 s, ok := value.(string) // Type Assertion
 if ok {
     fmt.Printf("value is string: %s\n", s)
@@ -1223,7 +1272,7 @@ if ok {
 
 Type Switchで型で分岐処理ができます。
 
-```
+```sample.go
 switch v := value.(type) {
 case string:
     fmt.Printf("value is string: %s\n", v)
@@ -1246,7 +1295,7 @@ case Stringer:
 
 同期処理の場合は、1度目のリクエスト完了後に2度目,3度目...と直列で続く。
 
-```
+```sample.go
 package main
 
 import (
@@ -1274,7 +1323,7 @@ func main() {
 
 `go` キーワードで非同期処理の場合は、並行してリクエストを行うのでその分早い。
 
-```
+```sample.go
 package main
 
 import (
@@ -1317,7 +1366,7 @@ func main() {
 
 まずは組み込み関数 `make` でチャネルの作り方と書き込み、読み込み方法について。
 
-```
+```sample.go
 // stringを扱うチャネルを生成
 ch := make(chan string)
 
@@ -1332,7 +1381,7 @@ message := <- ch
 
 HTTPリクエストを並行して発行し、早く取得されたステータスから順に受け取って処理しておく事ができる
 
-```
+```sample.go
 package main
 
 import (
@@ -1372,7 +1421,7 @@ func main() {
 
 主な用途はfor/select文とbreakを用いて実装するタイムアウト処理などに利用されます。
 
-```
+```sample.go
 ch1 := make(chan string)
 ch2 := make(chan string)
 for {
@@ -1415,7 +1464,174 @@ for {
 
 -----
 
+## API作ってみよう
+
+```
+├── bin
+├── pkg
+└── src
+    ├── github.com
+    │   └── julienschmidt
+    │       └── httprouter
+    │           ├── LICENSE
+    │           ├── README.md
+    │           ├── params_go17.go
+    │           ├── params_legacy.go
+    │           ├── path.go
+    │           ├── path_test.go
+    │           ├── router.go
+    │           ├── router_test.go
+    │           ├── tree.go
+    │           └── tree_test.go
+    └── main
+        └── main.go
+```
+
+```
+$ cd $GOPATH/src
+$ go get github.com/julienschmidt/httprouter
+```
+
+```main.go
+package main
+
+import (
+    "encoding/json"
+    "fmt"
+    "io/ioutil"
+    "log"
+    "net/http"
+
+    "github.com/julienschmidt/httprouter"
+)
+
+// /Hello/:langにハンドルされているHello関数
+func Hello(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+    lang := p.ByName("lang") // langパラメーターを取得する
+    fmt.Fprintf(w, lang)     // レスポンスに値を書き込む
+}
+
+// /ExampleにハンドルされているExample関数
+func Example(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+    defer r.Body.Close() // Example関数が終了する時に実行されるdeferステートメント
+
+    // リクエストボディを読み取る
+    bodyBytes, err := ioutil.ReadAll(r.Body)
+    if err != nil {
+        // リクエストボディの読み取りに失敗した => 400 Bad Requestエラー
+        http.Error(w, err.Error(), http.StatusBadRequest)
+        return
+    }
+
+    // JSONパラメーターを構造体にする為の定義
+    type ExampleParameter struct {
+        ID   int    `json:"id"`
+        Name string `json:"name"`
+    }
+    var param ExampleParameter
+
+    // ExampleParameter構造体に変換
+    err = json.Unmarshal(bodyBytes, &param)
+    if err != nil {
+        // JSONパラメーターを構造体への変換に失敗した => 400 Bad Requestエラー
+        http.Error(w, err.Error(), http.StatusBadRequest)
+        return
+    }
+
+    // 構造体に変換したExampleParameterを文字列にしてレスポンスに書き込む
+    fmt.Fprintf(w, fmt.Sprintf("%+v\n", param))
+}
+
+func main() {
+    router := httprouter.New() // HTTPルーターを初期化
+
+    // /HelloにGETリクエストがあったらHello関数にハンドルする
+    // :langはパラメーターとして扱われる
+    router.GET("/Hello/:lang", Hello)
+
+    // /ExampleにPOSTリクエストがあったらExample関数にハンドルする
+    router.POST("/Example", Example)
+
+    // Webサーバーを8080ポートで立ち上げる
+    err := http.ListenAndServe(":8080", router)
+    if err != nil {
+        log.Fatal(err)
+    }
+}
+```
+
+```
+$ cd $GOPATH/src/main
+$ go run main.go
+```
+
+```
+$ curl http://localhost:8080/Hello/golang
+Hello golang
+
+$ curl -XPOST -d "{\"id\": 1, \"name\": \"arakawa\"}" http://localhost:8080/Example
+{ID:1 Name:arakawa}
+```
+
+
+`/FizzBuzz/:num` にハンドル
+
+```
+http://localhost:8080/FizzBuzz/:num
+```
+
 
 ## GinでAPI作ってみよう
 
 TODO:
+
+
+## goの謎
+
+スライスは値とおもいきや参照?
+
+```
+import (
+    "fmt"
+)
+
+func main() {
+    s1 := []int{1, 2}
+    s2 := s1
+    s2[0] = 3
+    fmt.Println(s1) // [3 2]
+}
+```
+
+スライスは参照とおもいきや値?
+
+```
+import (
+    "fmt"
+)
+
+func main() {
+    s1 := []int{1}
+    s2 := s1
+    s2 = append(s2, 2)
+    fmt.Println(s1) // [1]
+}
+```
+
+同じ参照なのに値が違う?????
+
+```
+func main() {
+    s1 := make([]int, 5, 10) // 5個のゼロ値を持った容量10のintスライス
+    fmt.Println(s1) // [0 0 0 0 0]
+    s2 := s1
+    fmt.Println(&s1[0]) // 0xc0000160a0
+    fmt.Println(&s2[0]) // 0xc0000160a0
+    s2 = append(s2, []int{1,2,3}...)
+    fmt.Println(s1) // [0 0 0 0 0]
+    fmt.Println(s2) // [0 0 0 0 0 1 2 3]
+    fmt.Println(&s1[0]) // 0xc0000160a0
+    fmt.Println(&s2[0]) // 0xc0000160a0
+}
+```
+
